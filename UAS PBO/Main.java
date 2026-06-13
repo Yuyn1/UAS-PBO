@@ -18,43 +18,53 @@ public class Main {
         System.out.println("    SELAMAT DATANG DI Y&U FASHION STORE   ");
         System.out.println("=========================================");
         
-        // 1. Pilihan Masuk Pertama Kali
-        System.out.println("Masuk sebagai:");
-        System.out.println("1. Admin (Butuh Login)");
-        System.out.println("2. User / Pelanggan (Tanpa Login)");
-        System.out.print("Pilihan Anda [1-2]: ");
-        int jenisMasuk = scanner.nextInt();
-        scanner.nextLine(); // Clear buffer
+        int jenisMasuk = 0;
+
+        // --- VALIDASI INPUT GERBANG UTAMA (ANTI-CRASH) ---
+        while (true) {
+            System.out.println("Masuk sebagai:");
+            System.out.println("1. Admin (Butuh Login)");
+            System.out.println("2. User / Pelanggan (Tanpa Login)");
+            System.out.print("Pilihan Anda [1-2]: ");
+            
+            try {
+                jenisMasuk = scanner.nextInt();
+                scanner.nextLine(); // Clear buffer setelah input sukses
+
+                // Validasi jika angka yang dimasukkan di luar 1 atau 2
+                if (jenisMasuk == 1 || jenisMasuk == 2) {
+                    break; // Pilihan benar, keluar dari perulangan while
+                } else {
+                    System.out.println("\n[PERINGATAN] Pilihan tidak ada! Silakan pilih angka 1 atau 2.\n");
+                }
+            } catch (java.util.InputMismatchException e) {
+                // Menangkap eror jika user mengetik huruf/simbol (seperti ;')
+                System.out.println("\n[EROR] Input harus berupa angka! Silakan coba lagi.\n");
+                scanner.nextLine(); // Membersihkan sisa buffer karakter salah agar tidak looping terus-menerus
+            }
+        }
 
         String role = "";
 
         if (jenisMasuk == 1) {
-            // 2. Alur jika memilih Admin (Ada batasan maksimal 3 kali gagal)
             role = jalankanSistemLoginAdmin(conn);
             if (role.isEmpty()) {
                 System.out.println("\n[SYSTEM] Anda telah salah 3 kali. Akun diblokir sementara!");
                 System.out.println("Program dihentikan secara otomatis.");
                 return;
             }
-        } else if (jenisMasuk == 2) {
-            // 3. Alur jika memilih User (Langsung masuk tanpa password)
+        } else {
             role = "user";
             System.out.println("\nLogin Berhasil! Anda masuk sebagai: USER");
-        } else {
-            System.out.println("Pilihan tidak valid! Program keluar.");
-            return;
         }
 
-        // 4. Masuk ke Menu Utama (Menggunakan MenuHandler yang kemarin)
+        // Masuk ke Menu Utama
         BarangDAO barangDAO = new BarangDAOImpl(conn);
         MenuHandler menu = new MenuHandler(barangDAO, scanner);
         menu.setCurrentRole(role);
         menu.tampilkanMenuUtama();
     }
 
-    /**
-     * Mengurusi perulangan login admin maksimal 3 kali percobaan
-     */
     private static String jalankanSistemLoginAdmin(Connection conn) {
         int percobaan = 1;
         int maksPercobaan = 3;
@@ -66,7 +76,6 @@ public class Main {
 
             String roleTerdeteksi = cekKredensialDiDatabase(conn, username, password);
             
-            // Jika berhasil login dan perannya memang admin
             if (!roleTerdeteksi.isEmpty() && roleTerdeteksi.equals("admin")) {
                 System.out.println("\nLogin Berhasil! Anda masuk sebagai: ADMIN");
                 return roleTerdeteksi;
@@ -75,12 +84,9 @@ public class Main {
             System.out.println("Username/Password salah atau Anda bukan Admin!");
             percobaan++;
         }
-        return ""; // Mengembalikan string kosong jika 3 kali gagal
+        return ""; 
     }
 
-    /**
-     * Fungsi khusus untuk menembak query ke database users
-     */
     private static String cekKredensialDiDatabase(Connection conn, String username, String password) {
         String sql = "SELECT role FROM users WHERE username = ? AND password = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
