@@ -1,6 +1,11 @@
 import config.Koneksi;
 import dao.BarangDAO;
 import daoimpl.BarangDAOImpl;
+
+import dao.AdminDAO;
+import daoimpl.AdminDAOImpl;
+import service.AdminService;
+
 import java.sql.*;
 import java.util.Scanner;
 
@@ -65,41 +70,40 @@ public class Main {
         menu.tampilkanMenuUtama();
     }
 
-    private static String jalankanSistemLoginAdmin(Connection conn) {
-        int percobaan = 1;
-        int maksPercobaan = 3;
+private static String jalankanSistemLoginAdmin(Connection conn) {
 
-        while (percobaan <= maksPercobaan) {
-            System.out.println("\n--- LOGIN ADMIN (Percobaan " + percobaan + " dari " + maksPercobaan + ") ---");
-            System.out.print("Username: "); String username = scanner.nextLine();
-            System.out.print("Password: "); String password = scanner.nextLine();
+    int percobaan = 1;
+    int maksPercobaan = 3;
 
-            String roleTerdeteksi = cekKredensialDiDatabase(conn, username, password);
-            
-            if (!roleTerdeteksi.isEmpty() && roleTerdeteksi.equals("admin")) {
-                System.out.println("\nLogin Berhasil! Anda masuk sebagai: ADMIN");
-                return roleTerdeteksi;
-            }
+    AdminDAO adminDAO = new AdminDAOImpl(conn);
+    AdminService adminService = new AdminService(adminDAO);
 
-            System.out.println("Username/Password salah atau Anda bukan Admin!");
-            percobaan++;
+    while (percobaan <= maksPercobaan) {
+
+        System.out.println("\n--- LOGIN ADMIN (Percobaan "
+                + percobaan + " dari " + maksPercobaan + ") ---");
+
+        System.out.print("Username: ");
+        String username = scanner.nextLine();
+
+        System.out.print("Password: ");
+        String password = scanner.nextLine();
+
+        String roleTerdeteksi =
+                adminService.login(username, password);
+
+        if (!roleTerdeteksi.isEmpty()
+                && roleTerdeteksi.equals("admin")) {
+
+            System.out.println("\nLogin Berhasil! Anda masuk sebagai: ADMIN");
+            return roleTerdeteksi;
         }
-        return ""; 
+
+        System.out.println("Username/Password salah atau Anda bukan Admin!");
+        percobaan++;
     }
 
-    private static String cekKredensialDiDatabase(Connection conn, String username, String password) {
-        String sql = "SELECT role FROM users WHERE username = ? AND password = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, username);
-            ps.setString(2, password);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getString("role");
-                }
-            }
-        } catch (SQLException e) {
-            System.out.println("Error database saat login: " + e.getMessage());
-        }
-        return "";
-    }
+    return "";
+}
+
 }
