@@ -27,8 +27,8 @@ public class Main {
         // --- VALIDASI INPUT GERBANG UTAMA (ANTI-CRASH) ---
         while (true) {
             System.out.println("Masuk sebagai:");
-            System.out.println("1. Admin (Butuh Login)");
-            System.out.println("2. User / Pelanggan (Tanpa Login)");
+            System.out.println("1. Admin");
+            System.out.println("2. User");
             System.out.print("Pilihan Anda [1-2]: ");
             
             try {
@@ -94,7 +94,7 @@ public class Main {
                 return roleTerdeteksi;
             }
 
-            System.out.println("Username/Password salah atau Anda bukan Admin!");
+            System.out.println("Username/Password salah!");
             percobaan++;
         }
         return "";
