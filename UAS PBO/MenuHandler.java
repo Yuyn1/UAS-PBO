@@ -107,7 +107,24 @@ public class MenuHandler {
     private void tambahBarang() {
         System.out.println("\n--- Tambah Barang Baru ---");
         System.out.print("Nama Barang : "); String nama = scanner.nextLine();
-        System.out.print("Kategori    : "); String kategori = scanner.nextLine();
+        
+        // --- VALIDASI INPUT KATEGORI ---
+        String kategori = "";
+        while (true) {
+            System.out.print("Kategori [Atasan/Bawahan/Outwear/Alas Kaki/Aksesoris]: ");
+            String inputKategori = scanner.nextLine().trim();
+
+            // Cek kesesuaian kata tanpa peduli huruf besar/kecil
+            if (inputKategori.equalsIgnoreCase("Atasan")) { kategori = "Atasan"; break; }
+            else if (inputKategori.equalsIgnoreCase("Bawahan")) { kategori = "Bawahan"; break; }
+            else if (inputKategori.equalsIgnoreCase("Outwear")) { kategori = "Outwear"; break; }
+            else if (inputKategori.equalsIgnoreCase("Alas Kaki")) { kategori = "Alas Kaki"; break; }
+            else if (inputKategori.equalsIgnoreCase("Aksesoris")) { kategori = "Aksesoris"; break; }
+            else {
+                System.out.println("\n[PERINGATAN] Kategori tidak valid! Hanya boleh mengisi: Atasan, Bawahan, Outwear, Alas Kaki, atau Aksesoris.\n");
+            }
+        }
+
         System.out.print("Harga       : "); double harga = scanner.nextDouble();
         System.out.print("Stok        : "); int stok = scanner.nextInt();
         
@@ -125,7 +142,29 @@ public class MenuHandler {
         }
         
         System.out.print("Nama Baru (" + bLama.getNamaBarang() + "): "); String nama = scanner.nextLine();
-        System.out.print("Kategori Baru (" + bLama.getKategori() + "): "); String kategori = scanner.nextLine();
+        
+        // --- VALIDASI INPUT KATEGORI UNTUK UPDATE ---
+        String kategori = "";
+        while (true) {
+            System.out.print("Kategori Baru (" + bLama.getKategori() + ") [Atasan/Bawahan/Outwear/Alas Kaki/Aksesoris]: ");
+            String inputKategori = scanner.nextLine().trim();
+
+            // Jika user langsung menekan enter (kosong), pakai kategori lama
+            if (inputKategori.isEmpty()) {
+                kategori = bLama.getKategori();
+                break;
+            }
+
+            if (inputKategori.equalsIgnoreCase("Atasan")) { kategori = "Atasan"; break; }
+            else if (inputKategori.equalsIgnoreCase("Bawahan")) { kategori = "Bawahan"; break; }
+            else if (inputKategori.equalsIgnoreCase("Outwear")) { kategori = "Outwear"; break; }
+            else if (inputKategori.equalsIgnoreCase("Alas Kaki")) { kategori = "Alas Kaki"; break; }
+            else if (inputKategori.equalsIgnoreCase("Aksesoris")) { kategori = "Aksesoris"; break; }
+            else {
+                System.out.println("\n[PERINGATAN] Kategori tidak valid! Hanya boleh mengisi: Atasan, Bawahan, Outwear, Alas Kaki, atau Aksesoris.\n");
+            }
+        }
+
         System.out.print("Harga Baru (Rp" + bLama.getHarga() + "): "); double harga = scanner.nextDouble();
         System.out.print("Stok Baru (" + bLama.getStok() + "): "); int stok = scanner.nextInt();
         
