@@ -38,12 +38,12 @@ public class MenuHandler {
         System.out.println("   MENU UTAMA (" + currentRole.toUpperCase() + ") ");
         System.out.println("=================================");
         
-        System.out.println("1. Tampilkan Semua Barang (Read)");
+        System.out.println("1. Tampilkan Semua Barang");
         if (currentRole.equals("admin")) {
-            System.out.println("2. Tambah Barang Baru (Create)");
-            System.out.println("3. Ubah Data Barang (Update)");
-            System.out.println("4. Hapus Barang (Delete)");
-            System.out.println("5. Input Transaksi Baru & Diskon (New Transaction)");
+            System.out.println("2. Tambah Barang Baru");
+            System.out.println("3. Ubah Data Barang");
+            System.out.println("4. Hapus Barang");
+            System.out.println("5. Input Transaksi Baru");
         } else {
             // --- FITUR BARU UNTUK USER ---
             System.out.println("2. Cari Barang Berdasarkan Nama (Search)");
@@ -108,33 +108,77 @@ public class MenuHandler {
         System.out.println("\n--- Tambah Barang Baru ---");
         System.out.print("Nama Barang : "); String nama = scanner.nextLine();
         
-        // --- VALIDASI INPUT KATEGORI ---
+        // --- VALIDASI KATEGORI ---
         String kategori = "";
         while (true) {
             System.out.print("Kategori [Atasan/Bawahan/Outwear/Alas Kaki/Aksesoris]: ");
             String inputKategori = scanner.nextLine().trim();
-
-            // Cek kesesuaian kata tanpa peduli huruf besar/kecil
             if (inputKategori.equalsIgnoreCase("Atasan")) { kategori = "Atasan"; break; }
             else if (inputKategori.equalsIgnoreCase("Bawahan")) { kategori = "Bawahan"; break; }
             else if (inputKategori.equalsIgnoreCase("Outwear")) { kategori = "Outwear"; break; }
             else if (inputKategori.equalsIgnoreCase("Alas Kaki")) { kategori = "Alas Kaki"; break; }
             else if (inputKategori.equalsIgnoreCase("Aksesoris")) { kategori = "Aksesoris"; break; }
             else {
-                System.out.println("\n[PERINGATAN] Kategori tidak valid! Hanya boleh mengisi: Atasan, Bawahan, Outwear, Alas Kaki, atau Aksesoris.\n");
+                System.out.println("\n[PERINGATAN] Kategori tidak valid! Pilih yang tersedia.\n");
             }
         }
 
-        System.out.print("Harga       : "); double harga = scanner.nextDouble();
-        System.out.print("Stok        : "); int stok = scanner.nextInt();
+        // --- VALIDASI INPUT HARGA (ANTI-CRASH) ---
+        double harga = 0;
+        while (true) {
+            System.out.print("Harga       : ");
+            try {
+                harga = scanner.nextDouble();
+                if (harga < 0) {
+                    System.out.println("\n[PERINGATAN] Harga tidak boleh minus!\n");
+                    continue;
+                }
+                break; // Sukses, keluar dari loop harga
+            } catch (java.util.InputMismatchException e) {
+                System.out.println("\n[EROR] Harga harus berupa angka! Silakan coba lagi.\n");
+                scanner.nextLine(); // Bersihkan sisa buffer huruf yang salah
+            }
+        }
+
+        // --- VALIDASI INPUT STOK (ANTI-CRASH) ---
+        int stok = 0;
+        while (true) {
+            System.out.print("Stok        : ");
+            try {
+                stok = scanner.nextInt();
+                scanner.nextLine(); // Clear buffer setelah input angka terakhir sukses
+                if (stok < 0) {
+                    System.out.println("\n[PERINGATAN] Stok tidak boleh minus!\n");
+                    continue;
+                }
+                break; // Sukses, keluar dari loop stok
+            } catch (java.util.InputMismatchException e) {
+                System.out.println("\n[EROR] Stok harus berupa angka bulat! Silakan coba lagi.\n");
+                scanner.nextLine(); // Bersihkan sisa buffer huruf yang salah
+            }
+        }
         
         barangDAO.insert(new Barang(nama, kategori, harga, stok));
     }
 
     private void ubahBarang() {
         System.out.println("\n--- Ubah Data Barang ---");
-        System.out.print("Masukkan ID Barang: "); int id = scanner.nextInt(); scanner.nextLine();
         
+        // --- VALIDASI INPUT ID BARANG (ANTI-CRASH) ---
+        int id = 0;
+        while (true) {
+            System.out.print("Masukkan ID Barang: ");
+            try {
+                id = scanner.nextInt();
+                scanner.nextLine(); // Clear buffer setelah input angka sukses
+                break; // Sukses mendapatkan angka ID, keluar dari loop input ID
+            } catch (java.util.InputMismatchException e) {
+                System.out.println("\n[EROR] ID Barang harus berupa angka! Silakan coba lagi.\n");
+                scanner.nextLine(); // Bersihkan sisa buffer karakter/huruf yang salah
+            }
+        }
+        
+        // Proses pencarian barang ke database berdasarkan ID yang sudah tervalidasi
         Barang bLama = barangDAO.getById(id);
         if (bLama == null) { 
             System.out.println("Barang tidak ditemukan!"); 
@@ -143,30 +187,56 @@ public class MenuHandler {
         
         System.out.print("Nama Baru (" + bLama.getNamaBarang() + "): "); String nama = scanner.nextLine();
         
-        // --- VALIDASI INPUT KATEGORI UNTUK UPDATE ---
+        // --- VALIDASI KATEGORI UPDATE ---
         String kategori = "";
         while (true) {
             System.out.print("Kategori Baru (" + bLama.getKategori() + ") [Atasan/Bawahan/Outwear/Alas Kaki/Aksesoris]: ");
             String inputKategori = scanner.nextLine().trim();
-
-            // Jika user langsung menekan enter (kosong), pakai kategori lama
-            if (inputKategori.isEmpty()) {
-                kategori = bLama.getKategori();
-                break;
-            }
-
+            if (inputKategori.isEmpty()) { kategori = bLama.getKategori(); break; }
             if (inputKategori.equalsIgnoreCase("Atasan")) { kategori = "Atasan"; break; }
             else if (inputKategori.equalsIgnoreCase("Bawahan")) { kategori = "Bawahan"; break; }
             else if (inputKategori.equalsIgnoreCase("Outwear")) { kategori = "Outwear"; break; }
             else if (inputKategori.equalsIgnoreCase("Alas Kaki")) { kategori = "Alas Kaki"; break; }
             else if (inputKategori.equalsIgnoreCase("Aksesoris")) { kategori = "Aksesoris"; break; }
             else {
-                System.out.println("\n[PERINGATAN] Kategori tidak valid! Hanya boleh mengisi: Atasan, Bawahan, Outwear, Alas Kaki, atau Aksesoris.\n");
+                System.out.println("\n[PERINGATAN] Kategori tidak valid!\n");
             }
         }
 
-        System.out.print("Harga Baru (Rp" + bLama.getHarga() + "): "); double harga = scanner.nextDouble();
-        System.out.print("Stok Baru (" + bLama.getStok() + "): "); int stok = scanner.nextInt();
+        // --- VALIDASI HARGA UPDATE (ANTI-CRASH) ---
+        double harga = 0;
+        while (true) {
+            System.out.print("Harga Baru (Rp" + bLama.getHarga() + "): ");
+            try {
+                harga = scanner.nextDouble();
+                if (harga < 0) {
+                    System.out.println("\n[PERINGATAN] Harga tidak boleh minus!\n");
+                    continue;
+                }
+                break;
+            } catch (java.util.InputMismatchException e) {
+                System.out.println("\n[EROR] Harga harus berupa angka! Silakan coba lagi.\n");
+                scanner.nextLine();
+            }
+        }
+
+        // --- VALIDASI STOK UPDATE (ANTI-CRASH) ---
+        int stok = 0;
+        while (true) {
+            System.out.print("Stok Baru (" + bLama.getStok() + "): ");
+            try {
+                stok = scanner.nextInt();
+                scanner.nextLine(); // Clear buffer
+                if (stok < 0) {
+                    System.out.println("\n[PERINGATAN] Stok tidak boleh minus!\n");
+                    continue;
+                }
+                break;
+            } catch (java.util.InputMismatchException e) {
+                System.out.println("\n[EROR] Stok harus berupa angka bulat! Silakan coba lagi.\n");
+                scanner.nextLine();
+            }
+        }
         
         barangDAO.update(new Barang(id, nama, kategori, harga, stok));
     }
