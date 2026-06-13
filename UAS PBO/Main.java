@@ -1,13 +1,12 @@
 import config.Koneksi;
-import dao.BarangDAO;
-import daoimpl.BarangDAOImpl;
-
 import dao.AdminDAO;
+import dao.BarangDAO;
 import daoimpl.AdminDAOImpl;
-import service.AdminService;
-
+import daoimpl.BarangDAOImpl;
 import java.sql.*;
 import java.util.Scanner;
+import service.AdminService;
+
 
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
@@ -36,16 +35,14 @@ public class Main {
                 jenisMasuk = scanner.nextInt();
                 scanner.nextLine(); // Clear buffer setelah input sukses
 
-                // Validasi jika angka yang dimasukkan di luar 1 atau 2
                 if (jenisMasuk == 1 || jenisMasuk == 2) {
-                    break; // Pilihan benar, keluar dari perulangan while
+                    break; 
                 } else {
                     System.out.println("\n[PERINGATAN] Pilihan tidak ada! Silakan pilih angka 1 atau 2.\n");
                 }
             } catch (java.util.InputMismatchException e) {
-                // Menangkap eror jika user mengetik huruf/simbol (seperti ;')
                 System.out.println("\n[EROR] Input harus berupa angka! Silakan coba lagi.\n");
-                scanner.nextLine(); // Membersihkan sisa buffer karakter salah agar tidak looping terus-menerus
+                scanner.nextLine(); 
             }
         }
 
@@ -70,40 +67,36 @@ public class Main {
         menu.tampilkanMenuUtama();
     }
 
-private static String jalankanSistemLoginAdmin(Connection conn) {
+    /**
+     * Sistem Login Admin Baru yang memanfaatkan Lapisan AdminService & AdminDAO
+     */
+    private static String jalankanSistemLoginAdmin(Connection conn) {
+        int percobaan = 1;
+        int maksPercobaan = 3;
 
-    int percobaan = 1;
-    int maksPercobaan = 3;
+        // Inisialisasi Service dan DAO untuk Admin (Sesuai database barumu)
+        AdminDAO adminDAO = new AdminDAOImpl(conn);
+        AdminService adminService = new AdminService(adminDAO);
 
-    AdminDAO adminDAO = new AdminDAOImpl(conn);
-    AdminService adminService = new AdminService(adminDAO);
+        while (percobaan <= maksPercobaan) {
+            System.out.println("\n--- LOGIN ADMIN (Percobaan " + percobaan + " dari " + maksPercobaan + ") ---");
+            System.out.print("Username: ");
+            String username = scanner.nextLine();
 
-    while (percobaan <= maksPercobaan) {
+            System.out.print("Password: ");
+            String password = scanner.nextLine();
 
-        System.out.println("\n--- LOGIN ADMIN (Percobaan "
-                + percobaan + " dari " + maksPercobaan + ") ---");
+            // Memanggil pengecekan database via Service Layer
+            String roleTerdeteksi = adminService.login(username, password);
 
-        System.out.print("Username: ");
-        String username = scanner.nextLine();
+            if (roleTerdeteksi != null && !roleTerdeteksi.isEmpty() && roleTerdeteksi.equalsIgnoreCase("admin")) {
+                System.out.println("\nLogin Berhasil! Anda masuk sebagai: ADMIN");
+                return roleTerdeteksi;
+            }
 
-        System.out.print("Password: ");
-        String password = scanner.nextLine();
-
-        String roleTerdeteksi =
-                adminService.login(username, password);
-
-        if (!roleTerdeteksi.isEmpty()
-                && roleTerdeteksi.equals("admin")) {
-
-            System.out.println("\nLogin Berhasil! Anda masuk sebagai: ADMIN");
-            return roleTerdeteksi;
+            System.out.println("Username/Password salah atau Anda bukan Admin!");
+            percobaan++;
         }
-
-        System.out.println("Username/Password salah atau Anda bukan Admin!");
-        percobaan++;
+        return "";
     }
-
-    return "";
-}
-
 }
