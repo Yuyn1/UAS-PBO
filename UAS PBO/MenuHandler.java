@@ -53,10 +53,17 @@ public class MenuHandler {
     }
 
     private int ambilPilihanMenu() {
-        System.out.print("Pilih menu: ");
-        int pilihan = scanner.nextInt();
-        scanner.nextLine(); // Clear buffer
-        return pilihan;
+        while (true) {
+            System.out.print("Pilih menu: ");
+            try {
+                int pilihan = scanner.nextInt();
+                scanner.nextLine(); // Clear buffer
+                return pilihan;
+            } catch (java.util.InputMismatchException e) {
+                System.out.println("\n[EROR] Input menu harus berupa angka! Silakan pilih kembali.");
+                scanner.nextLine(); // Clear buffer huruf yang salah
+            }
+        }
     }
 
     private boolean isAksesDitolak(int pilihan) {
@@ -242,9 +249,9 @@ public class MenuHandler {
         }
     }
 
-    // --- FITUR USER 2: SIMULASI KERANJANG ---
+    // --- FITUR USER 2: KERANJANG BELANJA & BELI LANGSUNG (Stok Terupdate) ---
     private void simulasiKeranjang() {
-        System.out.println("\n--- SIMULASI KERANJANG BELANJA ---");
+        System.out.println("\n--- KERANJANG BELANJA & PEMBELIAN ---");
         System.out.print("Masukkan ID Barang yang ingin dibeli: ");
         int id = scanner.nextInt();
 
@@ -258,21 +265,51 @@ public class MenuHandler {
         System.out.print("Masukkan Jumlah: ");
         int jumlah = scanner.nextInt();
 
+        // Validasi ketersediaan stok
         if (jumlah > barang.getStok()) {
-            System.out.println("Maaf, stok tidak mencukupi. Sisa stok: " + barang.getStok());
+            System.out.println("Transaksi Gagal! Stok tidak mencukupi. Sisa stok saat ini: " + barang.getStok());
             return;
         }
 
-        double total = barang.getHarga() * jumlah;
+        double totalKotor = barang.getHarga() * jumlah;
+        double diskon = 0;
+
+        // User juga berhak mendapatkan diskon otomatis jika belanja >= 300rb
+        if (totalKotor >= 300000) {
+            diskon = totalKotor * 0.10;
+            System.out.println("Selamat! Anda mendapatkan Diskon Promo 10% karena belanja di atas Rp300.000");
+        }
+
+        double totalBersih = totalKotor - diskon;
+
         System.out.println("\n=================================");
-        System.out.println("   ESTIMASI NOTA BELANJA ANDA    ");
+        System.out.println("         NOTA BELANJA ANDA       ");
         System.out.println("=================================");
         System.out.println(" Produk      : " + barang.getNamaBarang());
         System.out.println(" Harga Satuan: Rp" + barang.getHarga());
         System.out.println(" Jumlah Beli : " + jumlah + " pcs");
         System.out.println("---------------------------------");
-        System.out.println(" Total Biaya : Rp" + total);
+        System.out.println(" Total Awal  : Rp" + totalKotor);
+        System.out.println(" Diskon      : Rp" + diskon);
+        System.out.println(" Total Bayar : Rp" + totalBersih);
         System.out.println("=================================");
-        System.out.println("Silakan tunjukkan estimasi ini ke kasir untuk pembayaran.");
+        System.out.print("Konfirmasi Pembelian & Bayar? (1 = Ya, 0 = Batal): ");
+        int konfirmasi = scanner.nextInt();
+
+        if (konfirmasi == 1) {
+            // 1. Potong stok objek barang
+            barang.setStok(barang.getStok() - jumlah);
+            
+            // 2. Update data stok terbaru ke database menggunakan DAO
+            barangDAO.update(barang); 
+            
+            // 3. Simpan riwayat struk ke tabel transaksi database
+            simpanTransaksiKeDatabase(id, jumlah, totalBersih);
+            
+            System.out.println("\n[SUCCESS] Pembelian Berhasil! Terima kasih telah berbelanja.");
+            System.out.println("Stok " + barang.getNamaBarang() + " berhasil diperbarui di database.");
+        } else {
+            System.out.println("Pembelian dibatalkan.");
+        }
     }
 } // Kurung kurawal penutup class luar berada tepat di sini
