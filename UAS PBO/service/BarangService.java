@@ -3,7 +3,7 @@ package service;
 import java.util.List;
 
 import dao.barangDAO;
-import entity.Barang;
+import model.Barang;
 
 public class BarangService {
 
