@@ -5,11 +5,12 @@ import java.util.Scanner;
 import model.Barang;
 
 public class MenuHandler {
-    private final BarangDAO barangDAO;
+    private final barangDAO barangDAO;
     private final Scanner scanner;
     private String currentRole;
+    private BarangService barangService;
 
-    public MenuHandler(BarangDAO barangDAO, Scanner scanner) {
+    public MenuHandler(barangDAO barangDAO, Scanner scanner) {
         this.barangDAO = barangDAO;
         this.scanner = scanner;
     }
@@ -45,7 +46,6 @@ public class MenuHandler {
             System.out.println("4. Hapus Barang");
             System.out.println("5. Input Transaksi Baru");
         } else {
-            // --- FITUR BARU UNTUK USER ---
             System.out.println("2. Cari Barang Berdasarkan Nama (Search)");
             System.out.println("3. Simulasi Hitung Keranjang Belanja (Cart Simulation)");
         }
@@ -57,11 +57,11 @@ public class MenuHandler {
             System.out.print("Pilih menu: ");
             try {
                 int pilihan = scanner.nextInt();
-                scanner.nextLine(); // Clear buffer
+                scanner.nextLine();
                 return pilihan;
             } catch (java.util.InputMismatchException e) {
                 System.out.println("\n[EROR] Input menu harus berupa angka! Silakan pilih kembali.");
-                scanner.nextLine(); // Clear buffer huruf yang salah
+                scanner.nextLine();
             }
         }
     }
@@ -72,23 +72,61 @@ public class MenuHandler {
 
     private void eksekusiFitur(int pilihan) {
         if (currentRole.equals("admin")) {
+
             switch (pilihan) {
-                case 1 -> tampilkanBarang();
-                case 2 -> tambahBarang();
-                case 3 -> ubahBarang();
-                case 4 -> hapusBarang();
-                case 5 -> prosesTransaksi();
-                case 0 -> System.out.println("Terima kasih telah menggunakan aplikasi!");
-                default -> System.out.println("Pilihan tidak valid!");
+                case 1:
+                    tampilkanBarang();
+                    break;
+
+                case 2:
+                    tambahBarang();
+                    break;
+
+                case 3:
+                    ubahBarang();
+                    break;
+
+                case 4:
+                    hapusBarang();
+                    break;
+
+                case 5:
+                    prosesTransaksi();
+                    break;
+
+                case 0:
+                    System.out.println("Terima kasih telah menggunakan aplikasi!");
+                    break;
+
+                default:
+                    System.out.println("Pilihan tidak valid!");
+                    break;
             }
+
         } else {
+
             switch (pilihan) {
-                case 1 -> tampilkanBarang();
-                case 2 -> cariBarangUser();      // <-- Fungsi Baru
-                case 3 -> simulasiKeranjang();    // <-- Fungsi Baru
-                case 0 -> System.out.println("Terima kasih telah menggunakan aplikasi!");
-                default -> System.out.println("Pilihan tidak valid!");
+                case 1:
+                    tampilkanBarang();
+                    break;
+
+                case 2:
+                    cariBarangUser();
+                    break;
+
+                case 3:
+                    simulasiKeranjang();
+                    break;
+
+                case 0:
+                    System.out.println("Terima kasih telah menggunakan aplikasi!");
+                    break;
+
+                default:
+                    System.out.println("Pilihan tidak valid!");
+                    break;
             }
+
         }
     }
 
@@ -108,14 +146,13 @@ public class MenuHandler {
         System.out.println("\n--- Tambah Barang Baru ---");
         System.out.print("Nama Barang : "); String nama = scanner.nextLine();
         
-        // --- VALIDASI KATEGORI ---
         String kategori = "";
         while (true) {
-            System.out.print("Kategori [Atasan/Bawahan/Outwear/Alas Kaki/Aksesoris]: ");
+            System.out.print("Kategori [Atasan/Bawahan/Outerwear/Alas Kaki/Aksesoris]: ");
             String inputKategori = scanner.nextLine().trim();
             if (inputKategori.equalsIgnoreCase("Atasan")) { kategori = "Atasan"; break; }
             else if (inputKategori.equalsIgnoreCase("Bawahan")) { kategori = "Bawahan"; break; }
-            else if (inputKategori.equalsIgnoreCase("Outwear")) { kategori = "Outwear"; break; }
+            else if (inputKategori.equalsIgnoreCase("Outerwear")) { kategori = "Outerwear"; break; }
             else if (inputKategori.equalsIgnoreCase("Alas Kaki")) { kategori = "Alas Kaki"; break; }
             else if (inputKategori.equalsIgnoreCase("Aksesoris")) { kategori = "Aksesoris"; break; }
             else {
@@ -123,7 +160,6 @@ public class MenuHandler {
             }
         }
 
-        // --- VALIDASI INPUT HARGA (ANTI-CRASH) ---
         double harga = 0;
         while (true) {
             System.out.print("Harga       : ");
@@ -133,52 +169,49 @@ public class MenuHandler {
                     System.out.println("\n[PERINGATAN] Harga tidak boleh minus!\n");
                     continue;
                 }
-                break; // Sukses, keluar dari loop harga
+                break; 
             } catch (java.util.InputMismatchException e) {
                 System.out.println("\n[EROR] Harga harus berupa angka! Silakan coba lagi.\n");
-                scanner.nextLine(); // Bersihkan sisa buffer huruf yang salah
+                scanner.nextLine(); 
             }
         }
 
-        // --- VALIDASI INPUT STOK (ANTI-CRASH) ---
         int stok = 0;
         while (true) {
             System.out.print("Stok        : ");
             try {
                 stok = scanner.nextInt();
-                scanner.nextLine(); // Clear buffer setelah input angka terakhir sukses
+                scanner.nextLine();
                 if (stok < 0) {
                     System.out.println("\n[PERINGATAN] Stok tidak boleh minus!\n");
                     continue;
                 }
-                break; // Sukses, keluar dari loop stok
+                break; 
             } catch (java.util.InputMismatchException e) {
                 System.out.println("\n[EROR] Stok harus berupa angka bulat! Silakan coba lagi.\n");
-                scanner.nextLine(); // Bersihkan sisa buffer huruf yang salah
+                scanner.nextLine();
             }
         }
         
-        barangDAO.insert(new Barang(nama, kategori, harga, stok));
+        barangDAO.insert(new Barang(0,nama, kategori, harga, stok));
     }
 
     private void ubahBarang() {
         System.out.println("\n--- Ubah Data Barang ---");
         
-        // --- VALIDASI INPUT ID BARANG (ANTI-CRASH) ---
         int id = 0;
         while (true) {
             System.out.print("Masukkan ID Barang: ");
             try {
                 id = scanner.nextInt();
-                scanner.nextLine(); // Clear buffer setelah input angka sukses
-                break; // Sukses mendapatkan angka ID, keluar dari loop input ID
+                scanner.nextLine(); 
+                break; 
             } catch (java.util.InputMismatchException e) {
                 System.out.println("\n[EROR] ID Barang harus berupa angka! Silakan coba lagi.\n");
-                scanner.nextLine(); // Bersihkan sisa buffer karakter/huruf yang salah
+                scanner.nextLine(); 
             }
         }
         
-        // Proses pencarian barang ke database berdasarkan ID yang sudah tervalidasi
         Barang bLama = barangDAO.getById(id);
         if (bLama == null) { 
             System.out.println("Barang tidak ditemukan!"); 
@@ -187,15 +220,14 @@ public class MenuHandler {
         
         System.out.print("Nama Baru (" + bLama.getNamaBarang() + "): "); String nama = scanner.nextLine();
         
-        // --- VALIDASI KATEGORI UPDATE ---
         String kategori = "";
         while (true) {
-            System.out.print("Kategori Baru (" + bLama.getKategori() + ") [Atasan/Bawahan/Outwear/Alas Kaki/Aksesoris]: ");
+            System.out.print("Kategori Baru (" + bLama.getKategori() + ") [Atasan/Bawahan/Outerwear/Alas Kaki/Aksesoris]: ");
             String inputKategori = scanner.nextLine().trim();
             if (inputKategori.isEmpty()) { kategori = bLama.getKategori(); break; }
             if (inputKategori.equalsIgnoreCase("Atasan")) { kategori = "Atasan"; break; }
             else if (inputKategori.equalsIgnoreCase("Bawahan")) { kategori = "Bawahan"; break; }
-            else if (inputKategori.equalsIgnoreCase("Outwear")) { kategori = "Outwear"; break; }
+            else if (inputKategori.equalsIgnoreCase("Outerwear")) { kategori = "Outerwear"; break; }
             else if (inputKategori.equalsIgnoreCase("Alas Kaki")) { kategori = "Alas Kaki"; break; }
             else if (inputKategori.equalsIgnoreCase("Aksesoris")) { kategori = "Aksesoris"; break; }
             else {
@@ -203,7 +235,6 @@ public class MenuHandler {
             }
         }
 
-        // --- VALIDASI HARGA UPDATE (ANTI-CRASH) ---
         double harga = 0;
         while (true) {
             System.out.print("Harga Baru (Rp" + bLama.getHarga() + "): ");
@@ -220,13 +251,12 @@ public class MenuHandler {
             }
         }
 
-        // --- VALIDASI STOK UPDATE (ANTI-CRASH) ---
         int stok = 0;
         while (true) {
             System.out.print("Stok Baru (" + bLama.getStok() + "): ");
             try {
                 stok = scanner.nextInt();
-                scanner.nextLine(); // Clear buffer
+                scanner.nextLine(); 
                 if (stok < 0) {
                     System.out.println("\n[PERINGATAN] Stok tidak boleh minus!\n");
                     continue;
@@ -242,14 +272,26 @@ public class MenuHandler {
     }
 
     private void hapusBarang() {
-        System.out.println("\n--- Hapus Barang ---");
-        System.out.print("Masukkan ID Barang: "); int id = scanner.nextInt();
-        
-        if (barangDAO.getById(id) == null) { 
-            System.out.println("Barang tidak ditemukan!"); 
-            return; 
+        try {
+
+            System.out.print("Masukkan ID barang yang akan dihapus: ");
+            int id = scanner.nextInt();
+            scanner.nextLine();
+
+            barangService.hapusBarang(id);
+
+            System.out.println("Barang berhasil dihapus!");
+
+        } catch (InputMismatchException e) {
+
+            System.out.println("ID harus berupa angka!");
+            scanner.nextLine();
+
+        } catch (IllegalArgumentException e) {
+
+            System.out.println(e.getMessage());
+            return;
         }
-        barangDAO.delete(id);
     }
 
     private void prosesTransaksi() {
@@ -305,7 +347,7 @@ public class MenuHandler {
         String insertDetail = "INSERT INTO detail_transaksi (transaksi_id, barang_id, jumlah, subtotal) VALUES (?, ?, ?, ?)";
         
         try {
-            Connection conn = config.Koneksi.getKoneksi();
+            Connection conn = config.koneksi.getKoneksi();
             if (conn == null) return;
             
             try (PreparedStatement psTrans = conn.prepareStatement(insertTransaksi, Statement.RETURN_GENERATED_KEYS)) {
@@ -330,7 +372,6 @@ public class MenuHandler {
             System.out.println("Gagal menyimpan riwayat transaksi: " + e.getMessage());
         }
     }
-    // --- FITUR USER 1: CARI BARANG ---
     private void cariBarangUser() {
         System.out.println("\n--- CARI BARANG ---");
         System.out.print("Masukkan kata kunci nama barang: ");
@@ -344,7 +385,6 @@ public class MenuHandler {
         System.out.println("-------------------------------------------------------------");
         
         for (Barang b : semuaBarang) {
-            // Mengecek apakah nama barang mengandung kata kunci (tanpa peduli huruf besar/kecil)
             if (b.getNamaBarang().toLowerCase().contains(keyword.toLowerCase())) {
                 System.out.printf("| %-3d | %-15s | %-12s | Rp%-8.0f | %-5d |\n", 
                     b.getId(), b.getNamaBarang(), b.getKategori(), b.getHarga(), b.getStok());
@@ -358,7 +398,6 @@ public class MenuHandler {
         }
     }
 
-    // --- FITUR USER 2: KERANJANG BELANJA & BELI LANGSUNG (Stok Terupdate) ---
     private void simulasiKeranjang() {
         System.out.println("\n--- KERANJANG BELANJA & PEMBELIAN ---");
         System.out.print("Masukkan ID Barang yang ingin dibeli: ");
@@ -374,7 +413,6 @@ public class MenuHandler {
         System.out.print("Masukkan Jumlah: ");
         int jumlah = scanner.nextInt();
 
-        // Validasi ketersediaan stok
         if (jumlah > barang.getStok()) {
             System.out.println("Transaksi Gagal! Stok tidak mencukupi. Sisa stok saat ini: " + barang.getStok());
             return;
@@ -383,7 +421,6 @@ public class MenuHandler {
         double totalKotor = barang.getHarga() * jumlah;
         double diskon = 0;
 
-        // User juga berhak mendapatkan diskon otomatis jika belanja >= 300rb
         if (totalKotor >= 300000) {
             diskon = totalKotor * 0.10;
             System.out.println("Selamat! Anda mendapatkan Diskon Promo 10% karena belanja di atas Rp300.000");
@@ -406,13 +443,8 @@ public class MenuHandler {
         int konfirmasi = scanner.nextInt();
 
         if (konfirmasi == 1) {
-            // 1. Potong stok objek barang
             barang.setStok(barang.getStok() - jumlah);
-            
-            // 2. Update data stok terbaru ke database menggunakan DAO
             barangDAO.update(barang); 
-            
-            // 3. Simpan riwayat struk ke tabel transaksi database
             simpanTransaksiKeDatabase(id, jumlah, totalBersih);
             
             System.out.println("\n[SUCCESS] Pembelian Berhasil! Terima kasih telah berbelanja.");
@@ -421,4 +453,4 @@ public class MenuHandler {
             System.out.println("Pembelian dibatalkan.");
         }
     }
-} // Kurung kurawal penutup class luar berada tepat di sini
+}
